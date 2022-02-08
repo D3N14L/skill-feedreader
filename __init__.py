@@ -7,15 +7,16 @@ from opsdroid.events import Message
 
 class FeedreaderSkill(Skill):
     
-    def __init__(self, opsdroid, config):
+    async def __init__(self, opsdroid, config):
         super(FeedreaderSkill, self).__init__(opsdroid, config)
-        self.subscriptions = self._load_subscriptions()
+        self.subscriptions = await self._load_subscriptions()
 
-    def _load_subscriptions(self):
-        self.opsdroid.memory.get("feedreader-subscriptions", default=dict())
+    async def _load_subscriptions(self):
+        subscriptions = await self.opsdroid.memory.get("feedreader-subscriptions", default=dict())
+        return subscriptions
 
     async def _save_subscriptions(self):
-        self.opsdroid.memory.put("feedreader-subscriptions", self.subscriptions)
+        await self.opsdroid.memory.put("feedreader-subscriptions", self.subscriptions)
     
     def _new_bookamrk(self, parsed_feed):
         latest_entry_date = ''
@@ -91,6 +92,5 @@ class FeedreaderSkill(Skill):
                 await self._handle_new_entries(new_entries, info)
                 
                 # set new bookmark
-                info['bookmark'] = self._new_bookamrk(parsed_feeds[feed])
-                self.subscriptions[user][feed_url] = info
+                self.subscriptions[user][feed_url]['bookmark'] = self._new_bookamrk(parsed_feeds[feed])
                 await self._save_subscriptions()
