@@ -13,7 +13,10 @@ class FeedreaderSkill(Skill):
     def __init__(self, opsdroid, config):
         super(FeedreaderSkill, self).__init__(opsdroid, config)
         _LOGGER.debug("Loading feedreader subscriptions.")
-        self.subscriptions = self.opsdroid.memory.get("feedreader-subscriptions", default=dict())
+        self.subscriptions = dict()
+
+    async def _load_subscriptions(self):
+        self.subscriptions = await self.opsdroid.memory.get("feedreader-subscriptions", default=dict())
 
     async def _save_subscriptions(self):
         await self.opsdroid.memory.put("feedreader-subscriptions", self.subscriptions)
@@ -59,6 +62,7 @@ class FeedreaderSkill(Skill):
             "target" : message.target
         }
 
+        await self._load_subscriptions()
         if not user in await self.subscriptions:
             self.subscriptions[user] = dict()
 
@@ -70,6 +74,7 @@ class FeedreaderSkill(Skill):
         user = message.user
         feed_url = message.regex.group(1)  
         _LOGGER.info(f"Unsubscribing {user} from {feed_url}")
+        await self._load_subscriptions()
         self.subscriptions[user].pop(feed_url)
         await self._save_subscriptions()
 
@@ -85,6 +90,7 @@ class FeedreaderSkill(Skill):
     @match_crontab('0 * * * *', timezone="Europe/London")
     async def check_feeds(self, event):
         parsed_feeds = dict()
+        await self._load_subscriptions()
         _LOGGER.info(f"Checking feeds ...")
         for user, user_subscriptions in self.subscriptions:
             _LOGGER.debug(f"Checking feeds for user {user} ...")
