@@ -1,14 +1,18 @@
 import feedparser
+import logging
 
 from opsdroid.skill import Skill
 from opsdroid.matchers import match_crontab
 from opsdroid.matchers import match_regex
 from opsdroid.events import Message
 
+_LOGGER = logging.getLogger(__name__)
+
 class FeedreaderSkill(Skill):
     
     def __init__(self, opsdroid, config):
         super(FeedreaderSkill, self).__init__(opsdroid, config)
+        _LOGGER.debug("Loading feedreader subscriptions.")
         self.subscriptions = self.opsdroid.memory.get("feedreader-subscriptions", default=dict())
 
     async def _save_subscriptions(self):
@@ -35,6 +39,7 @@ class FeedreaderSkill(Skill):
             connector = self.opsdroid.get_connector(subscription_info.connector)
             target = subscription_info.target
             message = self._create_new_entry_message(new_entry, connector, target)
+            _LOGGER.debug(f"Sending message for {new_entry.title} to {target} via connector {connector.name}.")
             await connector.send(message)
 
     def create_new_entry_message(self, entry, connector, target):
@@ -44,8 +49,9 @@ class FeedreaderSkill(Skill):
     @match_regex(r'subscribe (.*)')
     async def subscribe(self, message):
         feed_url = message.regex.group(1)
-        parsed_feed = await self._get_feed(feed_url)
         user = message.user
+        _LOGGER.info(f"Subscribing {user} to {feed_url}")
+        parsed_feed = await self._get_feed(feed_url)
         subscription_info = {
             "bookmark" : self._new_bookmark(parsed_feed),
             "connector" : message.connector.name,
@@ -62,7 +68,8 @@ class FeedreaderSkill(Skill):
     @match_regex(r'unsubscribe (.*)')
     async def unsubscribe(self, message):
         user = message.user
-        feed_url = message.regex.group(1)        
+        feed_url = message.regex.group(1)  
+        _LOGGER.info(f"Unsubscribing {user} from {feed_url}")
         self.subscriptions[user].pop(feed_url)
         await self._save_subscriptions()
 
@@ -78,12 +85,16 @@ class FeedreaderSkill(Skill):
     @match_crontab('0 * * * *', timezone="Europe/London")
     async def check_feeds(self, event):
         parsed_feeds = dict()
+        _LOGGER.info(f"Checking feeds ...")
         for user, user_subscriptions in self.subscriptions:
+            _LOGGER.debug(f"Checking feeds for user {user} ...")
             for feed, info in user_subscriptions:
                 if not (feed in parsed_feeds):
+                    _LOGGER.debug(f"Fetching feed from {feed} ...")
                     parsed_feeds[feed] = await self._get_feed(feed)
                 new_entries = self._get_new_entries_from_feed(parsed_feeds[feed], info.bookmark)
-                
+                _LOGGER.debug(f"Feed {feed} for user {user} has {len(new_entries)} new entries ...")
+
                 # send new entries to chat service
                 await self._handle_new_entries(new_entries, info)
                 
