@@ -63,7 +63,7 @@ class FeedreaderSkill(Skill):
         }
 
         await self._load_subscriptions()
-        if not user in await self.subscriptions:
+        if not user in self.subscriptions:
             self.subscriptions[user] = dict()
 
         self.subscriptions[user][feed_url] = subscription_info
