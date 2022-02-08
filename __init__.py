@@ -21,7 +21,7 @@ class FeedreaderSkill(Skill):
     def _new_bookmark(self, parsed_feed):
         latest_entry_date = ''
         for entry in parsed_feed.entries:
-            latest_entry_date = entry.published if entry.published > latest_entry_date else latest_entry_date
+            latest_entry_date = entry.updated if entry.updated > latest_entry_date else latest_entry_date
         return latest_entry_date
 
     async def _get_feed(self, feed_url):
@@ -30,7 +30,7 @@ class FeedreaderSkill(Skill):
     def _get_new_entries_from_feed(self, parsed_feed, bookmark):
         new_entries = []
         for entry in parsed_feed.entries:
-            if entry.published > bookmark:
+            if entry.updated > bookmark:
                 new_entries.append(entry)
         return new_entries
 
