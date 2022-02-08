@@ -8,7 +8,7 @@ from opsdroid.events import Message
 class FeedreaderSkill(Skill):
     
     def __init__(self, opsdroid, config):
-        self.subscriptions = _load_subscriptions()
+        self.subscriptions = await self._load_subscriptions()
         self.subscriptions.set_default(dict)
 
     async def _load_subscriptions(self):
@@ -37,34 +37,34 @@ class FeedreaderSkill(Skill):
         for new_entry in new_entries:
             connector = self.opsdroid.get_connector(subscription_info.connector)
             target = subscription_info.target
-            message = _create_new_entry_message(new_entry, connector, target)
+            message = self._create_new_entry_message(new_entry, connector, target)
             await connector.send(message)
 
-    def create_new_entry_message(entry, connector, target):
+    def create_new_entry_message(self, entry, connector, target):
         message = f"{entry.title}\n{entry.summary}\n{entry.link}"
         return Message(text=message,connector=connector, target=target)
 
     @match_regex(r'subscribe (.*)')
     async def subscribe(self, message):
         feed_url = message.regex.group(1)
-        parsed_feed = await _get_feed(feed_url)
+        parsed_feed = await self._get_feed(feed_url)
         user = message.user
         subscription_info = {
-            "bookmark" : _new_bookmark(parsed_feed),
+            "bookmark" : self._new_bookmark(parsed_feed),
             "connector" : message.connector.name,
             "feed_url" : feed_url,
             "target" : message.target
         }
 
         self.subscriptions[user][feed_url] = subscription_info
-        await _save_subscriptions()
+        await self._save_subscriptions()
 
     @match_regex(r'unsubscribe (.*)')
     async def unsubscribe(self, message):
         user = message.user
         feed_url = message.regex.group(1)        
         self.subscriptions[user].pop(feed_url)
-        await _save_subscriptions()
+        await self._save_subscriptions()
 
     @match_regex(r'list subscriptions')
     async def list_subscriptions(self, message):
@@ -81,13 +81,13 @@ class FeedreaderSkill(Skill):
         for user, user_subscriptions in self.subscriptions:
             for feed, info in user_subscriptions:
                 if not (feed in parsed_feeds):
-                    parsed_feeds[feed] = await _get_feed(feed)
-                new_entries = _get_new_entries_from_feed(parsed_feeds[feed], info.bookmark)
+                    parsed_feeds[feed] = await self._get_feed(feed)
+                new_entries = self._get_new_entries_from_feed(parsed_feeds[feed], info.bookmark)
                 
                 # send new entries to chat service
-                _handle_new_entries(new_entries, info)
+                await self._handle_new_entries(new_entries, info)
                 
                 # set new bookmark
-                info['bookmark'] = _new_bookamrk(parsed_feeds[feed])
+                info['bookmark'] = self._new_bookamrk(parsed_feeds[feed])
                 self.subscriptions[user][feed_url] = info
-                await _save_subscriptions()
+                await self._save_subscriptions()
