@@ -9,9 +9,8 @@ class FeedreaderSkill(Skill):
     
     def __init__(self, opsdroid, config):
         self.subscriptions = self._load_subscriptions()
-        self.subscriptions.set_default(dict)
 
-    async def _load_subscriptions(self):
+    def _load_subscriptions(self):
         self.opsdroid.memory.get("feedreader-subscriptions", default=dict())
 
     async def _save_subscriptions(self):
@@ -55,6 +54,9 @@ class FeedreaderSkill(Skill):
             "feed_url" : feed_url,
             "target" : message.target
         }
+
+        if not user in subscriptions:
+            self.subscriptions[user] = dict()
 
         self.subscriptions[user][feed_url] = subscription_info
         await self._save_subscriptions()
