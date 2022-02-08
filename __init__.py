@@ -2,6 +2,7 @@ import feedparser
 
 from opsdroid.skill import Skill
 from opsdroid.matchers import match_crontab
+from opsdroid.matchers import match_regex
 from opsdroid.events import Message
 
 class FeedreaderSkill(Skill):
