@@ -14,7 +14,7 @@ class FeedreaderSkill(Skill):
     async def _save_subscriptions(self):
         await self.opsdroid.memory.put("feedreader-subscriptions", self.subscriptions)
     
-    def _new_bookamrk(self, parsed_feed):
+    def _new_bookmark(self, parsed_feed):
         latest_entry_date = ''
         for entry in parsed_feed.entries:
             latest_entry_date = entry.published if entry.published > latest_entry_date else latest_entry_date
