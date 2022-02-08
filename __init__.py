@@ -83,7 +83,7 @@ class FeedreaderSkill(Skill):
         user = message.user
         user_subscriptions = self.subscriptions[user]
         response = ["Feeds:"]
-        for feed, info in user_subscriptions:
+        for feed, info in user_subscriptions.items():
             response.append(f"  {feed} (bookmark: {info['bookmark']})")
         await message.respond(response.join('\n'))
 
@@ -92,9 +92,9 @@ class FeedreaderSkill(Skill):
         parsed_feeds = dict()
         await self._load_subscriptions()
         _LOGGER.info(f"Checking feeds ...")
-        for user, user_subscriptions in self.subscriptions:
+        for user, user_subscriptions in self.subscriptions.items():
             _LOGGER.debug(f"Checking feeds for user {user} ...")
-            for feed, info in user_subscriptions:
+            for feed, info in user_subscriptions.items():
                 if not (feed in parsed_feeds):
                     _LOGGER.debug(f"Fetching feed from {feed} ...")
                     parsed_feeds[feed] = await self._get_feed(feed)
