@@ -59,7 +59,7 @@ class FeedreaderSkill(Skill):
             "target" : message.target
         }
 
-        if not user in subscriptions:
+        if not user in self.subscriptions:
             self.subscriptions[user] = dict()
 
         self.subscriptions[user][feed_url] = subscription_info
