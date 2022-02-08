@@ -8,7 +8,7 @@ from opsdroid.events import Message
 class FeedreaderSkill(Skill):
     
     def __init__(self, opsdroid, config):
-        self.subscriptions = await self._load_subscriptions()
+        self.subscriptions = self._load_subscriptions()
         self.subscriptions.set_default(dict)
 
     async def _load_subscriptions(self):
