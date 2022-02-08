@@ -85,7 +85,7 @@ class FeedreaderSkill(Skill):
         response = ["Feeds:"]
         for feed, info in user_subscriptions.items():
             response.append(f"  {feed} (bookmark: {info['bookmark']})")
-        await message.respond(response.join('\n'))
+        await message.respond('\n'.join(response))
 
     @match_crontab('0 * * * *', timezone="Europe/London")
     async def check_feeds(self, event):
