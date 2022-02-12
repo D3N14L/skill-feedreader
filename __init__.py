@@ -61,13 +61,12 @@ class FeedreaderSkill(Skill):
             "feed_url" : feed_url,
             "target" : message.target
         }
-
         await self._load_subscriptions()
         if not user in self.subscriptions:
             self.subscriptions[user] = dict()
-
         self.subscriptions[user][feed_url] = subscription_info
         await self._save_subscriptions()
+        await message.respond(f"Okay, I subscribed you to: {parsed_feed.title}")
 
     @match_regex(r'unsubscribe (.*)')
     async def unsubscribe(self, message):
@@ -77,15 +76,19 @@ class FeedreaderSkill(Skill):
         await self._load_subscriptions()
         self.subscriptions[user].pop(feed_url)
         await self._save_subscriptions()
+        await message.respond(f"I removed {feed_url} from your subscriptions.")
 
     @match_regex(r'list subscriptions')
     async def list_subscriptions(self, message):
         user = message.user
-        user_subscriptions = self.subscriptions[user]
-        response = ["Feeds:"]
-        for feed, info in user_subscriptions.items():
-            response.append(f"  {feed} (bookmark: {info['bookmark']})")
-        await message.respond('\n'.join(response))
+        if user in self.subscriptions:
+            user_subscriptions = self.subscriptions[user]
+            response = ["Feeds:"]
+            for feed, info in user_subscriptions.items():
+                response.append(f"  {feed} (bookmark: {info['bookmark']})")
+            await message.respond('\n'.join(response))
+        else
+            await message.respond("No feeds on your list.")
 
     @match_crontab('0 * * * *', timezone="Europe/London")
     async def check_feeds(self, event):
