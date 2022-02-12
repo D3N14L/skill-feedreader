@@ -66,7 +66,7 @@ class FeedreaderSkill(Skill):
             self.subscriptions[user] = dict()
         self.subscriptions[user][feed_url] = subscription_info
         await self._save_subscriptions()
-        await message.respond(f"Okay, I subscribed you to: {parsed_feed.title}")
+        await message.respond(f"Okay, I subscribed you to: {parsed_feed.feed.title}")
 
     @match_regex(r'unsubscribe (.*)')
     async def unsubscribe(self, message):
