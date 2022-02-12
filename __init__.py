@@ -87,7 +87,7 @@ class FeedreaderSkill(Skill):
             for feed, info in user_subscriptions.items():
                 response.append(f"  {feed} (bookmark: {info['bookmark']})")
             await message.respond('\n'.join(response))
-        else
+        else:
             await message.respond("No feeds on your list.")
 
     @match_crontab('0 * * * *', timezone="Europe/London")
