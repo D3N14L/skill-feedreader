@@ -9,7 +9,7 @@ from opsdroid.events import Message
 _LOGGER = logging.getLogger(__name__)
 
 class FeedreaderSkill(Skill):
-    
+
     def __init__(self, opsdroid, config):
         super(FeedreaderSkill, self).__init__(opsdroid, config)
         _LOGGER.debug("Loading feedreader subscriptions.")
@@ -20,7 +20,7 @@ class FeedreaderSkill(Skill):
 
     async def _save_subscriptions(self):
         await self.opsdroid.memory.put("feedreader-subscriptions", self.subscriptions)
-    
+
     def _new_bookmark(self, parsed_feed):
         latest_entry_date = ''
         for entry in parsed_feed.entries:
@@ -72,7 +72,7 @@ class FeedreaderSkill(Skill):
     @match_regex(r'unsubscribe (.*)')
     async def unsubscribe(self, message):
         user = message.user
-        feed_url = message.regex.group(1)  
+        feed_url = message.regex.group(1)
         _LOGGER.info(f"Unsubscribing {user} from {feed_url}")
         await self._load_subscriptions()
         self.subscriptions[user].pop(feed_url)
@@ -98,12 +98,13 @@ class FeedreaderSkill(Skill):
                 if not (feed in parsed_feeds):
                     _LOGGER.debug(f"Fetching feed from {feed} ...")
                     parsed_feeds[feed] = await self._get_feed(feed)
+                _LOGGER.debug(f"Feed info {info}")
                 new_entries = self._get_new_entries_from_feed(parsed_feeds[feed], info.bookmark)
                 _LOGGER.debug(f"Feed {feed} for user {user} has {len(new_entries)} new entries ...")
 
                 # send new entries to chat service
                 await self._handle_new_entries(new_entries, info)
-                
+
                 # set new bookmark
                 self.subscriptions[user][feed_url]['bookmark'] = self._new_bookamrk(parsed_feeds[feed])
                 await self._save_subscriptions()
