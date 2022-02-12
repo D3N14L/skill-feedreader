@@ -12,7 +12,8 @@ class FeedreaderSkill(Skill):
 
     def __init__(self, opsdroid, config):
         super(FeedreaderSkill, self).__init__(opsdroid, config)
-        _LOGGER.debug("Loading feedreader subscriptions.")
+
+        # TODO: remove this. Load on demand and save on demand.
         self.subscriptions = dict()
 
     async def _load_subscriptions(self):
@@ -109,5 +110,5 @@ class FeedreaderSkill(Skill):
                 await self._handle_new_entries(new_entries, info)
 
                 # set new bookmark
-                self.subscriptions[user][feed_url]['bookmark'] = self._new_bookamrk(parsed_feeds[feed])
+                self.subscriptions[user][feed_url]['bookmark'] = self._new_bookmark(parsed_feeds[feed])
                 await self._save_subscriptions()
