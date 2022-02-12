@@ -39,8 +39,8 @@ class FeedreaderSkill(Skill):
 
     async def _handle_new_entries(self, new_entries, subscription_info):
         for new_entry in new_entries:
-            connector = self.opsdroid.get_connector(subscription_info.connector)
-            target = subscription_info.target
+            connector = self.opsdroid.get_connector(subscription_info['connector'])
+            target = subscription_info['target']
             message = self._create_new_entry_message(new_entry, connector, target)
             _LOGGER.debug(f"Sending message for {new_entry.title} to {target} via connector {connector.name}.")
             await connector.send(message)
@@ -98,8 +98,7 @@ class FeedreaderSkill(Skill):
                 if not (feed in parsed_feeds):
                     _LOGGER.debug(f"Fetching feed from {feed} ...")
                     parsed_feeds[feed] = await self._get_feed(feed)
-                _LOGGER.debug(f"Feed info {info}")
-                new_entries = self._get_new_entries_from_feed(parsed_feeds[feed], info.bookmark)
+                new_entries = self._get_new_entries_from_feed(parsed_feeds[feed], info['bookmark'])
                 _LOGGER.debug(f"Feed {feed} for user {user} has {len(new_entries)} new entries ...")
 
                 # send new entries to chat service
