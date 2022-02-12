@@ -80,6 +80,7 @@ class FeedreaderSkill(Skill):
 
     @match_regex(r'list subscriptions')
     async def list_subscriptions(self, message):
+        await self._load_subscriptions()
         user = message.user
         if user in self.subscriptions:
             user_subscriptions = self.subscriptions[user]
